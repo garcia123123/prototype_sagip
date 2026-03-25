@@ -1,7 +1,14 @@
 ﻿import 'package:flutter/material.dart';
-import 'screen/login_screen.dart';
+import 'screen/login_register.dart';
+import 'screen/test.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:prototype_sagip/widget_tree.dart';
+
+Future <void> main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -11,8 +18,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Sagip_App_Prototype',
-      home: const MyHomePage(),
+      home: const WidgetTree(),
     );
   }
 }
@@ -31,7 +39,7 @@ class MyHomePage extends StatelessWidget {
             Expanded(
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('SAGIP app'),
+                child: Text('SAGIPP app'),
               ),
             ),
 
@@ -50,6 +58,21 @@ class MyHomePage extends StatelessWidget {
                 ),
               ),
             ),
+
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TestScreen()),
+                    );
+                  },
+                  child: const Text('Test Screen'),
+                ),
+              ),
+            ),
           ],
         ),
           backgroundColor: Colors.lightBlue[100],
@@ -60,12 +83,3 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
-
-//Logger
-// import 'package:logger/logger.dart';
-//final logger = logger();
-// debug (logger.d()): Detailed information mainly for debugging.
-// info (logger.i()): General informational messages about the application's running state.
-// warning (logger.w()): Indications that something unexpected happened, but the app can continue running.
-// error (logger.e()): Serious issues that might cause parts of the app to fail.
-// verbose (logger.v()): More verbose logs, often very detailed.

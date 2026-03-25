@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "524544481711",
+    "project_id": "sagip-prototype",
+    "storage_bucket": "sagip-prototype.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524544481711:android:5aa9163a26f104528bb75a",
+        "android_client_info": {
+          "package_name": "com.example.prototype_sagip"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkIo05GuX-I_JXIq2eK3SBgEpGW7IHJNE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

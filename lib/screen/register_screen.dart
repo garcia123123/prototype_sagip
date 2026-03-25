@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:prototype_sagip/screen/login_screen.dart';
+import 'login_register.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -11,10 +11,7 @@ class RegisterScreen extends StatelessWidget {
       body: Center(
         child: TextButton(
           onPressed: () {
-            Navigator.pop(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-            );
+            Navigator.pop(context);
           },
           child: const Text('Login'),
         ),
