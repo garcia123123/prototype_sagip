@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prototype_sagip/authenticate.dart';
+import 'package:prototype_sagip/widget_tree.dart';
 
 class LoginScreen extends StatefulWidget{
   const LoginScreen ({Key? key}) : super(key: key);
@@ -10,19 +11,35 @@ class LoginScreen extends StatefulWidget{
 }
 
 class _LoginPageState extends State<LoginScreen>{
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? errorMessage = '';
   bool isLogin = true;
-  bool _isPasswordVisible = false; // Added to track password visibility
+  bool _isPasswordVisible = false;
 
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
+  final TextEditingController _controllerFirstName = TextEditingController();
+  final TextEditingController _controllerLastName = TextEditingController();
+  final TextEditingController _controllerMiddleInitial = TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async{
+    if (!_formKey.currentState!.validate()) return;
+
     try{
       await Authenticate().signInWithEmailAndPassword(
-        email: _controllerEmail.text,
+        email: _controllerEmail.text.trim(),
         password: _controllerPassword.text,
       );
+
+      //if (mounted) checks if the widget/ screen is still active..
+      //..on the screen or not before executing the command
+      //Resets the stack
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const WidgetTree()),
+          (route) => false,
+        );
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
@@ -31,19 +48,31 @@ class _LoginPageState extends State<LoginScreen>{
   }
 
   Future<void> createUserWithEmailAndPassword() async{
+    if (!_formKey.currentState!.validate()) return;
+
     try{
+      String firstName = _controllerFirstName.text.trim();
+      String lastName = _controllerLastName.text.trim();
+      String middleInitial = _controllerMiddleInitial.text.trim().toUpperCase();
+      
+      String fullName = "$firstName ${middleInitial.isNotEmpty ? "$middleInitial. " : ""}$lastName".trim();
+      
       await Authenticate().createUserWithEmailAndPassword(
-        email: _controllerEmail.text,
+        email: _controllerEmail.text.trim(),
         password: _controllerPassword.text,
+        displayName: fullName,
       );
-      
-      // Sign out immediately after registration to prevent automatic login
-      // Firebase automatically logs in the user after a registration success
+
+      //Sign out new registered user
       await Authenticate().signOut();
-      
+
+      //Move to login screen after registration
       setState(() {
-        isLogin = true; // Switch back to login view (this changes the button text to "Log in")
+        isLogin = true;
         errorMessage = 'Account created successfully. Please log in.';
+        _controllerFirstName.clear();
+        _controllerLastName.clear();
+        _controllerMiddleInitial.clear();
       });
       
     } on FirebaseAuthException catch (e) {
@@ -54,72 +83,78 @@ class _LoginPageState extends State<LoginScreen>{
   }
 
   Widget _title(){
-    return const Text('Login / Register');
+    return Text(isLogin ? 'Login' : 'Register');
   }
 
   Widget _entryField(
-      String title,
-      TextEditingController controller,
-      ){
-    return TextField(
+    String title, 
+    TextEditingController controller, {
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+  }){
+    return TextFormField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: title,
-      ),
+      keyboardType: keyboardType,
+      validator: validator ?? (value) {
+        if (value == null || value.trim().isEmpty) {
+          return '$title is required';
+        }
+        return null;
+      },
+      decoration: InputDecoration(labelText: title),
     );
   }
 
-  // New method specifically for the password field
-  Widget _passwordField(
-      String title,
-      TextEditingController controller,
-      ){
-    return TextField(
+  Widget _passwordField(String title, TextEditingController controller){
+    return TextFormField(
       controller: controller,
-      obscureText: !_isPasswordVisible, // Toggles between asterisks and text
+      obscureText: !_isPasswordVisible,
+      //Disabled suggestions and autocorrect for passwords
+      enableSuggestions: false,
+      autocorrect: false,
+      keyboardType: TextInputType.visiblePassword,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Password is required';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters';
+        }
+        return null;
+      },
       decoration: InputDecoration(
         labelText: title,
         suffixIcon: IconButton(
-          icon: Icon(
-            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            setState(() {
-              _isPasswordVisible = !_isPasswordVisible;
-            });
-          },
+          icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
         ),
       ),
     );
   }
 
-  Widget _errorMessage(){
-    return Text(errorMessage == '' ? '' : 'Humm? $errorMessage');
-  }
+  Widget _errorMessage() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    child: Text(
+      errorMessage == '' ? '' : '$errorMessage',
+      style: const TextStyle(color: Colors.red, fontSize: 14),
+      textAlign: TextAlign.center,
+    ),
+  );
 
-  
-  //Button to submit the email / password
   Widget _submitButton(){
     return ElevatedButton(
-      onPressed: () {
-        if (isLogin) {
-          signInWithEmailAndPassword();
-        } else {
-          createUserWithEmailAndPassword();
-        }
-      },
+      onPressed: isLogin ? signInWithEmailAndPassword : createUserWithEmailAndPassword,
       child: Text(isLogin ? 'Log in' : 'Register'),
     );
   }
 
-  //Button to switch between login and register
   Widget _loginOrRegisterButton(){
     return TextButton(
-      onPressed: () {
-        setState(() {
-          isLogin = !isLogin;
-        });
-      },
+      onPressed: () => setState(() {
+        isLogin = !isLogin;
+        errorMessage = '';
+        _formKey.currentState?.reset();
+      }),
       child: Text(isLogin ? 'Register instead' : 'Login instead'),
     );
   }
@@ -127,24 +162,50 @@ class _LoginPageState extends State<LoginScreen>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(
-        title: _title(),
-      ),
-
+      appBar: AppBar(title: _title()),
       body: Container(
         height: double.infinity,
         width: double.infinity,
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _entryField('Email', _controllerEmail),
-            _passwordField('Password', _controllerPassword), // Using the new password field
-            _errorMessage(),
-            _submitButton(),
-            _loginOrRegisterButton(),
-          ]
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                if (!isLogin) ...[
+                  _entryField('First Name', _controllerFirstName),
+                  _entryField('Last Name', _controllerLastName),
+                  _entryField(
+                    'Middle Initial', 
+                    _controllerMiddleInitial,
+                    validator: (value) {
+                      if (value != null && value.length > 2) {
+                        return 'Too long';
+                      }
+                      return null;
+                    }
+                  ),
+                ],
+                _entryField(
+                  'Email', 
+                  _controllerEmail,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return 'Email is required';
+                    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                        .hasMatch(value)) {
+                      return 'Enter a valid email';
+                    }
+                    return null;
+                  }
+                ),
+                _passwordField('Password', _controllerPassword),
+                _errorMessage(),
+                _submitButton(),
+                _loginOrRegisterButton(),
+              ]
+            ),
+          ),
         )
       ),
     );

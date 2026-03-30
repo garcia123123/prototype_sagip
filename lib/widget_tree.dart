@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:prototype_sagip/authenticate.dart';
 import 'package:prototype_sagip/screen/login_register.dart';
 import 'package:prototype_sagip/screen/new_download_user_screen.dart';
 import 'package:prototype_sagip/main.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class WidgetTree extends StatefulWidget{
   const WidgetTree({Key? key}) : super(key: key);
@@ -25,7 +27,6 @@ class _WidgetTreeState extends State<WidgetTree>{
         } else {
           return const NewDownloadUserScreen();
         }
-
       }
     );
   }

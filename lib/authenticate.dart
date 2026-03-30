@@ -1,20 +1,21 @@
-//For authentication
-
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:flutter/cupertino.dart';
 
 class Authenticate {
+
+  //Checks if anyone is logged in
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+  //Getter of the current user's data
   User? get currentUser => _firebaseAuth.currentUser;
 
+  //Signal if user logged in or logged out
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-  //For Login
+  //For Log in
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
-}) async {
+  }) async {
     await _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -25,15 +26,20 @@ class Authenticate {
   Future<void> createUserWithEmailAndPassword({
     required String email,
     required String password,
+    String? displayName,
   }) async {
-    await _firebaseAuth.createUserWithEmailAndPassword(
+    UserCredential credential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
+    
+    //Save the name to the Firebase profile
+    if (displayName != null) {
+      await credential.user?.updateDisplayName(displayName);
+    }
   }
 
-  //For Sign Out
-  Future<void> signOut() async{
+  Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }
 }

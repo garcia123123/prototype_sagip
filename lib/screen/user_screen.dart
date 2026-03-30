@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prototype_sagip/authenticate.dart';
+import 'package:prototype_sagip/screen/new_download_user_screen.dart';
 
-class TestScreen extends StatelessWidget {
-  TestScreen({Key? key}) : super(key: key);
+class UserScreen extends StatelessWidget {
+  UserScreen({Key? key}) : super(key: key);
 
   final User? user = Authenticate().currentUser;
 
   Widget _title(){
-    return const Text('Firebase Authentication');
+    return const Text('Profile');
   }
 
   Widget _userID(){
@@ -16,13 +17,24 @@ class TestScreen extends StatelessWidget {
   }
 
   //For Sign Out
-  //Grabs the signOut() from Authenticate.dart
-  Future<void> signOut() async{
+  //Grabs the signOut() from Authenticate.dart and clears the navigation stack
+  Future<void> signOut(BuildContext context) async{
     await Authenticate().signOut();
+    
+    // Clear navigation stack and move directly to NewDownloadUserScreen
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const NewDownloadUserScreen()),
+        (route) => false,
+      );
+    }
   }
 
-  Widget _signOutButton(){
-    return ElevatedButton(onPressed: signOut, child: const Text('Sign out'),);
+  Widget _signOutButton(BuildContext context){
+    return ElevatedButton(
+      onPressed: () => signOut(context), 
+      child: const Text('Sign out'),
+    );
   }
 
   @override
@@ -39,7 +51,7 @@ class TestScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _userID(),
-            _signOutButton(),
+            _signOutButton(context),
           ],
         ),
       ),
