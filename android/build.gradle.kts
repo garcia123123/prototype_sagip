@@ -1,6 +1,5 @@
 plugins {
-    id("com.google.gms.google-services") version "4.4.4" apply false
-    //id("com.android.application") version "8.11.1"
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 allprojects {
@@ -10,18 +9,16 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
-rootProject.layout.buildDirectory.value(newBuildDir)
-
-subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
-}
 subprojects {
     project.evaluationDependsOn(":app")
+    
+    // Force all subprojects (plugins) to use compileSdk 35
+    afterEvaluate {
+        if (project.hasProperty("android")) {
+            val android = project.extensions.getByName("android") as com.android.build.gradle.BaseExtension
+            android.compileSdkVersion(35)
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {

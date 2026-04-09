@@ -55,7 +55,8 @@ class _LoginPageState extends State<LoginScreen>{
       String lastName = _controllerLastName.text.trim();
       String middleInitial = _controllerMiddleInitial.text.trim().toUpperCase();
       
-      String fullName = "$firstName ${middleInitial.isNotEmpty ? "$middleInitial. " : ""}$lastName".trim();
+      // Format: (LastName, FirstName M.) or (LastName, FirstName)
+      String fullName = "($lastName, $firstName${middleInitial.isNotEmpty ? " $middleInitial." : ""})";
       
       await Authenticate().createUserWithEmailAndPassword(
         email: _controllerEmail.text.trim(),
@@ -136,7 +137,7 @@ class _LoginPageState extends State<LoginScreen>{
     padding: const EdgeInsets.symmetric(vertical: 10),
     child: Text(
       errorMessage == '' ? '' : '$errorMessage',
-      style: const TextStyle(color: Colors.red, fontSize: 14),
+      style: const TextStyle(fontSize: 14, color: Colors.red),
       textAlign: TextAlign.center,
     ),
   );

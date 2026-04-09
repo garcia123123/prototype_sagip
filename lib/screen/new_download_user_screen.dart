@@ -50,15 +50,15 @@ class NewDownloadUserScreen extends StatelessWidget{
               Row(
                 mainAxisAlignment: MainAxisAlignment.center, // Center the row horizontally
                 children: [
-                  Text('text 1'),
-                  SizedBox(width: 20), // Adjustable space between texts
-                  Text('text 2'),
+                  const Text('text 1'),
+                  const SizedBox(width: 20), // Adjustable space between texts
+                  const Text('text 2'),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center, // Center the row horizontally
                 children: [
-                  Text('Populate later about what the app is about (Infograph)'),
+                  const Text('Populate later about what the app is about (Infograph)'),
                 ],
               ),
             ],
